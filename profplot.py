@@ -10,20 +10,16 @@ Functions:
 """
 
 import functools
-import time
+import timeit
 from inspect import signature
 import matplotlib.pyplot as plt
 
-_ONE_BILLION = 10**9
 
 def ret_time_decorator(func):
     """Decorator to time function execution. Returns time taken."""
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        start = time.monotonic_ns()
-        func(*args, **kwargs)
-        end = time.monotonic_ns()
-        return (end - start)/_ONE_BILLION
+        return timeit.timeit(lambda: func(*args, **kwargs), number=1)
     return wrapper
 
 def _dup_dict_without_keys(x, *args):
@@ -40,10 +36,8 @@ class _AbstractProfiler:
 
     def _run_and_time(self, kwargs):
         """Return a number representing function runtime."""
-        start = time.monotonic_ns()
-        self._get_profilefunc()(**kwargs)
-        end = time.monotonic_ns()
-        return (end - start)/_ONE_BILLION
+        return timeit.timeit(lambda: self._get_profilefunc()(**kwargs),
+                             number=1)
 
     def _check_var_kwargs_and_key(self, init_kwargs, var_key):
         if len(init_kwargs) == 0:
@@ -195,8 +189,8 @@ class ProfilePlotter:
                            The object under each key should be such that they
                            will run the function with one of them being an
                            iterable of objects that will allow the function to
-                           run. This argument is the variable argument that should
-                           change the runtime of the function.
+                           run. This argument is the variable argument that
+                           should change the runtime of the function.
             var_key -- the argument that is to be varied in the class init to
                        change function runtime.
             method -- class method to profile
